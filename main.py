@@ -3,9 +3,6 @@
 
 
 
-
-
-
 import streamlit as st
 import random
 import string
@@ -174,8 +171,8 @@ class Message:
 
 
 # Streamlit app
-st.set_page_config(page_title="Decoding the Message", layout="wide")
-st.title("🔐 Decoding the Message")
+st.set_page_config(page_title="They Love Me", layout="wide", page_icon="⚔️")
+st.title("❤️ They Love Me - Draw Steel Campaign")
 
 # The secret message
 SECRET_MESSAGE = """Your name is Gunnar. You are a flesh dwarf, so mask your voice with the "deep male number four" audio.
@@ -192,71 +189,28 @@ message_obj = st.session_state.message_obj
 if 'guesses' not in st.session_state:
     st.session_state.guesses = {letter: '' for letter in message_obj.unique_letters}
 
-# Create two columns
-col1, col2 = st.columns([1.5, 1])
-key_idx = 0
-with col2:
-    st.header("Letter Decoder")
-    st.subheader("Enter your guesses for each cipher character:")
+tab1, tab2 = st.tabs(["1. Decode the message", "2. Other"])
+with tab1:
+    st.title("🔐 Decoding the Message")
+    # Create two columns
+    col1, col2 = st.columns([1.5, 1])
+    key_idx = 0
+    with col2:
+        st.header("Letter Decoder")
+        st.subheader("Enter your guesses for each cipher character:")
 
-    letters = message_obj.unique_letters
+        letters = message_obj.unique_letters
 
-    # First show vowels (dice characters) in their own row
-    st.markdown("## **Dice 1-5:**")
-    vowel_cols = st.columns(5)
-    vowel_count = 0
+        # First show vowels (dice characters) in their own row
+        st.markdown("## **Dice 1-5:**")
+        vowel_cols = st.columns(5)
+        vowel_count = 0
 
-    for letter in letters:
-        if letter in 'aeiou':
-            cipher_char = message_obj.cipher_map[letter]
-
-            with vowel_cols[vowel_count]:
-                st.markdown(
-                    f"""
-                    <div style="
-                        text-align: center;
-                        font-size: 32px;
-                        font-weight: 700;
-                        margin-bottom: -10px;
-                    ">
-                        {cipher_char}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-                guess = st.text_input(
-                    label=f"{cipher_char}",
-                    value=st.session_state.guesses[letter],
-                    max_chars=1,
-                    key=f"nice_try_ben_{key_idx}",
-                    label_visibility="collapsed"
-                )
-                key_idx += 1
-
-                # Update the guess
-                if guess:
-                    st.session_state.guesses[letter] = guess.lower()
-                else:
-                    st.session_state.guesses[letter] = ''
-
-            vowel_count += 1
-
-    st.markdown("---")
-    st.markdown("## **Non-Dice characters**")
-
-    # Then show consonants in scrambled order
-    consonants = [l for l in letters if l not in 'aeiou']
-    cols_per_row = 5
-
-    for i in range(0, len(consonants), cols_per_row):
-        cols = st.columns(cols_per_row)
-        for j in range(cols_per_row):
-            idx = i + j
-            if idx < len(consonants):
-                letter = consonants[idx]
+        for letter in letters:
+            if letter in 'aeiou':
                 cipher_char = message_obj.cipher_map[letter]
 
-                with cols[j]:
+                with vowel_cols[vowel_count]:
                     st.markdown(
                         f"""
                         <div style="
@@ -284,26 +238,72 @@ with col2:
                         st.session_state.guesses[letter] = guess.lower()
                     else:
                         st.session_state.guesses[letter] = ''
-with col1:
-    st.header("Encoded Message")
 
-    # Display the decoded message with red highlighting
-    formatted_message = message_obj.format_decoded_message(st.session_state.guesses)
-    st.markdown(
-        f'<div style="background-color: #dedede; padding: 20px; border-radius: 5px; font-family: monospace; font-size: 32px; line-height: 1.6;">{formatted_message}</div>',
-        unsafe_allow_html=True)
+                vowel_count += 1
 
-    st.info("💡 Words highlighted in **red** have only one unknown letter! Two letter words are not highlighted.")
+        st.markdown("---")
+        st.markdown("## **Non-Dice characters**")
 
-# Show progress
-total_letters = len(message_obj.unique_letters)
-guessed_letters = sum(1 for g in st.session_state.guesses.values() if g)
-st.progress(guessed_letters / total_letters)
-st.write(f"Progress: {guessed_letters}/{total_letters} letters guessed")
+        # Then show consonants in scrambled order
+        consonants = [l for l in letters if l not in 'aeiou']
+        cols_per_row = 5
 
-# Check if solved
-if guessed_letters == total_letters:
-    decoded = message_obj.decode(st.session_state.guesses)
-    if decoded.lower() == SECRET_MESSAGE.lower():
-        st.success("🎉 Congratulations! You've decoded the message!")
-        st.balloons()
+        for i in range(0, len(consonants), cols_per_row):
+            cols = st.columns(cols_per_row)
+            for j in range(cols_per_row):
+                idx = i + j
+                if idx < len(consonants):
+                    letter = consonants[idx]
+                    cipher_char = message_obj.cipher_map[letter]
+
+                    with cols[j]:
+                        st.markdown(
+                            f"""
+                            <div style="
+                                text-align: center;
+                                font-size: 32px;
+                                font-weight: 700;
+                                margin-bottom: -10px;
+                            ">
+                                {cipher_char}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                        guess = st.text_input(
+                            label=f"{cipher_char}",
+                            value=st.session_state.guesses[letter],
+                            max_chars=1,
+                            key=f"nice_try_ben_{key_idx}",
+                            label_visibility="collapsed"
+                        )
+                        key_idx += 1
+
+                        # Update the guess
+                        if guess:
+                            st.session_state.guesses[letter] = guess.lower()
+                        else:
+                            st.session_state.guesses[letter] = ''
+    with col1:
+        st.header("Encoded Message")
+
+        # Display the decoded message with red highlighting
+        formatted_message = message_obj.format_decoded_message(st.session_state.guesses)
+        st.markdown(
+            f'<div style="background-color: #dedede; padding: 20px; border-radius: 5px; font-family: monospace; font-size: 32px; line-height: 1.6;">{formatted_message}</div>',
+            unsafe_allow_html=True)
+
+        st.info("💡 Words highlighted in **red** have only one unknown letter! Two letter words are not highlighted.")
+
+    # Show progress
+    total_letters = len(message_obj.unique_letters)
+    guessed_letters = sum(1 for g in st.session_state.guesses.values() if g)
+    st.progress(guessed_letters / total_letters)
+    st.write(f"Progress: {guessed_letters}/{total_letters} letters guessed")
+
+    # Check if solved
+    if guessed_letters == total_letters:
+        decoded = message_obj.decode(st.session_state.guesses)
+        if decoded.lower() == SECRET_MESSAGE.lower():
+            st.success("🎉 Congratulations! You've decoded the message!")
+            st.balloons()
